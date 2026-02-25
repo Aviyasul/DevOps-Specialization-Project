@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_HUB_USER = "aviyasul"
+        DOCKER_HUB_USER = "aviasul"
         IMAGE_NAME = "aviya-jenkins-app"
     }
 

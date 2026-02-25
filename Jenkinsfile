@@ -2,15 +2,14 @@ pipeline {
     agent any
     
     environment {
-        // Change to your actual Docker Hub username
-        DOCKER_HUB_USER = "your-username"
+        DOCKER_HUB_USER = "aviyasul"
         IMAGE_NAME = "aviya-jenkins-app"
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                checkout scm // This pulls your files from GitHub
+                checkout scm
             }
         }
 
@@ -19,7 +18,7 @@ pipeline {
                 stage('Linting') {
                     steps {
                         echo 'Running Flake8, ShellCheck, and Hadolint...'
-                        sh 'echo "Mock: Linting passed!"' 
+                        sh 'echo "Mock: Linting passed!"'
                     }
                 }
                 stage('Security Scanning') {
@@ -35,17 +34,23 @@ pipeline {
             steps {
                 script {
                     echo "Building image: ${DOCKER_HUB_USER}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    // This uses the Dockerfile in your project/jenkins folder
-                    sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${env.BUILD_NUMBER} project/jenkins/"
+                    sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${env.BUILD_NUMBER} ."
                 }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                echo "Mocking push to Docker Hub..."
-                sh 'echo "Successfully pushed to Docker Hub"'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                }
             }
         }
+    }
+
+    post {
+        success { echo 'Pipeline completed successfully!' }
+        failure { echo 'Pipeline failed. Check logs above.' }
     }
 }

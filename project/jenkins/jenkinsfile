@@ -7,6 +7,12 @@ pipeline {
     }
 
     stages {
+        stage('Install Docker') {
+            steps {
+                sh 'apt-get update && apt-get install -y docker.io || true'
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 checkout scm
